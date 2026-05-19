@@ -52,15 +52,14 @@ Règles STRICTES :
 Génère uniquement le post, sans introduction ni commentaire.`;
 
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true",
+          "Authorization": `Bearer ${import.meta.env.VITE_MISTRAL_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
+          model: "mistral-large-latest",
           max_tokens: 1000,
           messages: [{ role: "user", content: prompt }],
         }),
@@ -88,13 +87,8 @@ Génère uniquement le post, sans introduction ni commentaire.`;
         return;
       }
 
-      const content = parsed?.content;
-      if (Array.isArray(content)) {
-        const text = content.filter(b => b.type === "text").map(b => b.text).join("");
-        setPost(text.trim() || "Réponse vide, réessaie !");
-      } else {
-        setPost("Format de réponse inattendu. Réessaie !");
-      }
+      const text = parsed?.choices?.[0]?.message?.content;
+      setPost(text?.trim() || "Réponse vide, réessaie !");
     } catch (e) {
       setPost(`Erreur réseau : ${e.message}`);
     }
